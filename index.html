@@ -14,6 +14,9 @@
 <link rel="icon" href="icon-180.png">
 <style>
 [hidden]{display:none!important}
+.gatewrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding-inline:16px;padding-block:24px}
+.gatecard{width:100%;max-width:360px}
+#gPin{font-size:28px;letter-spacing:.3em;text-align:center}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 img{max-width:100%}
@@ -84,7 +87,7 @@ details summary{cursor:pointer;font-weight:600;color:var(--accent);min-height:32
 .v-pcb{color:var(--pcb);background:var(--pcb-bg)}
 .v-kp{color:var(--kp);background:var(--kp-bg)}
 .v-rest{color:var(--rest);background:var(--rest-bg)}
-.v-usikker_pcb,.v-usikker_kp{color:var(--usikker);background:var(--usikker-bg)}
+.v-usikker,.v-usikker_pcb,.v-usikker_kp{color:var(--usikker);background:var(--usikker-bg)}
 .reading{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:15px}
 .reading dt{color:var(--muted)}
 .reading dd{margin:0;min-width:0;overflow-wrap:anywhere}
@@ -162,7 +165,16 @@ a{color:var(--accent)}
 </style>
 </head>
 <body>
-<div class="app">
+<div id="gate" class="gatewrap" hidden>
+  <form id="gateForm" class="card gatecard" autocomplete="off">
+    <h1>Rutesjekk</h1>
+    <p class="muted" style="margin:0">Skriv inn PIN-koden for å bruke appen.</p>
+    <input id="gPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="PIN-kode" aria-label="PIN-kode">
+    <p id="gErr" class="warn" style="list-style:none;padding:0" hidden>Feil PIN-kode. Prøv igjen.</p>
+    <button type="submit" class="primary">Opne</button>
+  </form>
+</div>
+<div class="app" id="appMain" hidden>
   <header class="top">
     <div class="brand"><h1>Rutesjekk</h1><small>PCB · KP · restavfall</small></div>
   </header>
@@ -206,7 +218,8 @@ a{color:var(--accent)}
       <p class="sublabel">Er produsenten norsk?</p>
       <div class="seg" role="radiogroup">
         <label class="chip"><input type="radio" name="norsk" value="ja"> Norsk</label>
-        <label class="chip"><input type="radio" name="norsk" value="nei"> Utanlandsk / veit ikkje</label>
+        <label class="chip"><input type="radio" name="norsk" value="nei"> Utanlandsk</label>
+        <label class="chip wide"><input type="radio" name="norsk" value="ukjend"> Veit ikkje</label>
       </div>
     </div>
 
@@ -223,13 +236,15 @@ a{color:var(--accent)}
         <tr><td>Inga avstandslist (enkel eller kopla rute)</td><td>Restavfall</td></tr>
         <tr><td>Merka Thermopane (ikkje lima)</td><td>Restavfall</td></tr>
         <tr><td>Før 1965, norsk produsent</td><td>Restavfall</td></tr>
-        <tr><td>Før 1965, utanlandsk eller ukjend produsent</td><td>PCB</td></tr>
+        <tr><td>Før 1965, utanlandsk produsent</td><td>PCB</td></tr>
+        <tr><td>Før 1965, ukjend produsent</td><td>Usikkert (PCB eller restavfall)</td></tr>
         <tr><td>1965–1975</td><td>PCB</td></tr>
         <tr><td>1976–1979, norsk produsent</td><td>KP</td></tr>
-        <tr><td>1976–1979, utanlandsk eller ukjend produsent</td><td>PCB</td></tr>
+        <tr><td>1976–1979, utanlandsk produsent</td><td>PCB</td></tr>
+        <tr><td>1976–1979, ukjend produsent</td><td>Usikkert (PCB eller KP)</td></tr>
         <tr><td>1980–1990</td><td>KP</td></tr>
         <tr><td>1991 eller seinare</td><td>Restavfall</td></tr>
-        <tr><td>Ingen årstal, utan blekkskrift eller perforerte linjer</td><td>PCB</td></tr>
+        <tr><td>Ingen årstal, utan blekkskrift eller perforerte linjer</td><td>Usikkert</td></tr>
         <tr><td>Ingen årstal, med blekkskrift eller perforerte linjer</td><td>Usikkert: ikkje PCB, KP kan ikkje utelukkast</td></tr>
       </tbody></table></div>
     <h3>Produsentar appen kjenner</h3>
@@ -249,7 +264,8 @@ const VERDICT={
   pcb:{label:"PCB",sub:"Sorter som PCB-rute"},
   kp:{label:"KP",sub:"Sorter som klorparafinrute"},
   rest:{label:"Restavfall",sub:"Ikkje PCB og ikkje KP"},
-  usikker_pcb:{label:"Usikkert",sub:"Behandle som PCB"},
+  usikker:{label:"Usikkert",sub:"Kan ikkje fastslåast ut frå opplysningane"},
+  usikker_pcb:{label:"Usikkert",sub:"Kontroller årstalet"},
   usikker_kp:{label:"Usikkert",sub:"Ikkje PCB. KP kan ikkje utelukkast"}
 };
 const $=id=>document.getElementById(id);
@@ -275,15 +291,17 @@ function classify(r){
   const y=r.aarstal;
   if(y===null){
     if(r.etter1979) return {v:"usikker_kp",rule:"Blekkskrift eller perforerte linjer betyr produsert etter 1979, så ruta er ikkje PCB. Utan årstal kan KP (1975–1990) ikkje utelukkast."};
-    return {v:"pcb",rule:"Udatert rute utan blekkskrift eller perforerte linjer. Kan vere frå PCB-perioden, og blir sortert som PCB."};
+    return {v:"usikker",sub:"Kan vere PCB, KP eller restavfall",rule:"Utan årstal og utan blekkskrift eller perforerte linjer kan ruta vere frå kva periode som helst. Merk: Ruteretur sin rettleiar seier at udaterte ruter som kan vere frå PCB-perioden, skal sorterast som PCB."};
   }
-  if(y>THIS_YEAR) return {v:"usikker_pcb",rule:"Årstalet "+y+" er fram i tid. Kontroller årstalet. Behandle som PCB til det er avklart."};
+  if(y>THIS_YEAR) return {v:"usikker_pcb",rule:"Årstalet "+y+" er fram i tid, så det er truleg feillese. Kontroller årstalet."};
   if(y<1965){ const nv=r.namn?" ("+r.namn+")":"";
-    return r.norsk?{v:"rest",rule:y+", norsk produsent"+nv+": norske ruter frå før 1965 er utanfor PCB-perioden (1965–1975)."}:{v:"pcb",rule:y+", utanlandsk eller ukjend produsent"+nv+": utanlandske ruter til og med 1979 er PCB, også eldre."}; }
+    if(r.land==="ukjend") return {v:"usikker",sub:"PCB eller restavfall",rule:y+": norske ruter frå før 1965 er restavfall, utanlandske er PCB. Produsenten er ukjend, så det kan ikkje fastslåast."};
+    return r.land==="norsk"?{v:"rest",rule:y+", norsk produsent"+nv+": norske ruter frå før 1965 er utanfor PCB-perioden (1965–1975)."}:{v:"pcb",rule:y+", utanlandsk produsent"+nv+": utanlandske ruter til og med 1979 er PCB, også eldre."}; }
   if(y>=1991) return {v:"rest",rule:y+": produsert 1991 eller seinare, verken PCB eller KP."};
   if(y>=1980) return {v:"kp",rule:y+": ruter frå 1980–1990 er KP."};
   if(y>=1976){ const nv=r.namn?" ("+r.namn+")":"";
-    return r.norsk?{v:"kp",rule:y+", norsk produsent"+nv+": norske ruter frå 1976–1979 er KP."}:{v:"pcb",rule:y+", utanlandsk eller ukjend produsent"+nv+": til og med 1979 er PCB."}; }
+    if(r.land==="ukjend") return {v:"usikker",sub:"PCB eller KP",rule:y+": norske ruter frå 1976–1979 er KP, utanlandske er PCB. Produsenten er ukjend, så det kan ikkje fastslåast."};
+    return r.land==="norsk"?{v:"kp",rule:y+", norsk produsent"+nv+": norske ruter frå 1976–1979 er KP."}:{v:"pcb",rule:y+", utanlandsk produsent"+nv+": utanlandske ruter til og med 1979 er PCB."}; }
   return {v:"pcb",rule:y+": ruter frå 1965–1975 er PCB."};
 }
 const radio=n=>{const el=document.querySelector('input[name="'+n+'"]:checked');return el?el.value:null;};
@@ -313,8 +331,8 @@ function render(){
     else if(in7679){lab="Kven er produsenten?";sub="Skriv produsenten, eller svar om han er norsk.";}
     $("vLabel").textContent=lab; $("vSub").textContent=sub; show("rule",false); return; }
   const c=classify({ingen_list:$("cNoSpacer").checked,thermopane:$("cThermo").checked,aarstal:y,etter1979:noYear&&radio("post")==="ja",
-    norsk:hit?hit[2]==="Norsk":radio("norsk")==="ja",namn:hit?hit[0]:(t||null)});
-  v.className="verdict v-"+c.v; $("vLabel").textContent=VERDICT[c.v].label; $("vSub").textContent=VERDICT[c.v].sub;
+    land:hit?(hit[2]==="Norsk"?"norsk":"utanlandsk"):({ja:"norsk",nei:"utanlandsk",ukjend:"ukjend"}[radio("norsk")]||"ukjend"),namn:hit?hit[0]:(t||null)});
+  v.className="verdict v-"+c.v; $("vLabel").textContent=VERDICT[c.v].label; $("vSub").textContent=c.sub||VERDICT[c.v].sub;
   $("rule").textContent=c.rule; show("rule",true);
 }
 ["eYear","cNoYear","cNoSpacer","cThermo","eProd"].forEach(id=>{$(id).addEventListener("input",render);$(id).addEventListener("change",render);});
@@ -363,6 +381,16 @@ $("entry").addEventListener("submit",e=>e.preventDefault());
 $("resetBtn").onclick=()=>{ $("entry").reset(); $("codeBox").hidden=true; renderCode(); render(); window.scrollTo({top:0,behavior:"smooth"}); };
 render();
 window.__rs={classify,findProd,decodeCode};
+/* ---------- PIN ---------- */
+const PIN_HASH="be41f18a5dd47bdaf83e48d79430bf5c0f7b26233717df91064ddded54db2bba";
+async function sha(t){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+function unlock(){ $("gate").hidden=true; $("appMain").hidden=false; }
+let ok=false; try{ ok=localStorage.getItem("rs.pin")===PIN_HASH; }catch(e){}
+if(ok) unlock(); else { $("gate").hidden=false; setTimeout(()=>$("gPin").focus(),50); }
+$("gateForm").addEventListener("submit",async e=>{ e.preventDefault();
+  const h=await sha("rutesjekk:"+$("gPin").value.trim());
+  if(h===PIN_HASH){ try{ localStorage.setItem("rs.pin",h); }catch(err){} unlock(); }
+  else { $("gErr").hidden=false; $("gPin").value=""; $("gPin").focus(); } });
 if("serviceWorker" in navigator){ window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); }); }
 })();
 </script>
