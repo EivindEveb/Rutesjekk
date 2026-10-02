@@ -141,7 +141,7 @@ a{color:var(--accent)}
 .chip.wide{grid-column:1 / -1}
 .q{display:flex;flex-direction:column;gap:8px}
 .yearrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:stretch}
-.yearrow input::placeholder{font-size:22px;font-weight:600}
+.yearrow input::placeholder{font-size:20px;font-weight:600}
 .yearrow input{font-family:var(--f-display);font-size:28px;font-weight:700;min-height:56px;letter-spacing:.04em}
 .sugg{display:flex;flex-wrap:wrap;gap:6px}
 .sugg button{min-height:40px;padding:6px 12px;font-size:15px;border-radius:999px}
@@ -236,8 +236,7 @@ a{color:var(--accent)}
         <tr><td>Inga avstandslist (enkel eller kopla rute)</td><td>Restavfall</td></tr>
         <tr><td>Merka Thermopane (ikkje lima)</td><td>Restavfall</td></tr>
         <tr><td>Før 1965, norsk produsent</td><td>Restavfall</td></tr>
-        <tr><td>Før 1965, utanlandsk produsent</td><td>PCB</td></tr>
-        <tr><td>Før 1965, ukjend produsent</td><td>Usikkert (PCB eller restavfall)</td></tr>
+        <tr><td>Før 1965, utanlandsk eller ukjend produsent</td><td>Usikkert (kan vere PCB)</td></tr>
         <tr><td>1965–1975</td><td>PCB</td></tr>
         <tr><td>1976–1979, norsk produsent</td><td>KP</td></tr>
         <tr><td>1976–1979, utanlandsk produsent</td><td>PCB</td></tr>
@@ -295,8 +294,9 @@ function classify(r){
   }
   if(y>THIS_YEAR) return {v:"usikker_pcb",rule:"Årstalet "+y+" er fram i tid, så det er truleg feillese. Kontroller årstalet."};
   if(y<1965){ const nv=r.namn?" ("+r.namn+")":"";
-    if(r.land==="ukjend") return {v:"usikker",sub:"PCB eller restavfall",rule:y+": norske ruter frå før 1965 er restavfall, utanlandske er PCB. Produsenten er ukjend, så det kan ikkje fastslåast."};
-    return r.land==="norsk"?{v:"rest",rule:y+", norsk produsent"+nv+": norske ruter frå før 1965 er utanfor PCB-perioden (1965–1975)."}:{v:"pcb",rule:y+", utanlandsk produsent"+nv+": utanlandske ruter til og med 1979 er PCB, også eldre."}; }
+    if(r.land==="norsk") return {v:"rest",rule:y+", norsk produsent"+nv+": norske ruter frå før 1965 er utanfor PCB-perioden (1965–1975)."};
+    const old=y<1950?" PCB i isolerglas er ikkje kjent før 1950-talet, så PCB er lite sannsynleg.":" Utanlandske isolerglas frå 1950-talet og utover kan innehalde PCB, men ikkje alle gjer det.";
+    return {v:"usikker",sub:r.land==="ukjend"?"Kan vere PCB eller restavfall":"Kan vere PCB",rule:y+(r.land==="ukjend"?", ukjend produsent":", utanlandsk produsent"+nv)+": kan ikkje fastslåast sikkert."+old}; }
   if(y>=1991) return {v:"rest",rule:y+": produsert 1991 eller seinare, verken PCB eller KP."};
   if(y>=1980) return {v:"kp",rule:y+": ruter frå 1980–1990 er KP."};
   if(y>=1976){ const nv=r.namn?" ("+r.namn+")":"";
@@ -309,7 +309,7 @@ function parseYear(v){ v=String(v||"").replace(/[^0-9]/g,""); return v.length===
 
 function render(){
   const special=$("cNoSpacer").checked||$("cThermo").checked, noYear=$("cNoYear").checked;
-  const raw=$("eYear").value.replace(/[^0-9]/g,""), y=noYear?null:parseYear(raw);
+  const raw=$("eYear").value.trim(), y=noYear?null:(/^(19|20)\d{2}$/.test(raw)?+raw:null);
   const in7679=!special&&y!==null&&((y>=1976&&y<=1979)||y<1965);
   const t=$("eProd").value.trim(), hit=findProd(t);
   $("qYear").hidden=special; $("eYear").disabled=noYear;
@@ -326,7 +326,7 @@ function render(){
   let ready=special||y!==null||(noYear&&radio("post")); if(in7679&&!hit&&!radio("norsk")) ready=false;
   const v=$("verdict");
   if(!ready){ v.className="verdict placeholder"; let lab="Skriv årstalet", sub="Svaret kjem her med ein gong.";
-    if(!noYear&&raw&&y===null){lab="Skriv heile årstalet";sub="Fire siffer, t.d. 1975. Står det «75» på lista, skriv 1975.";}
+    if(!noYear&&raw&&y===null){ if(raw.length<4){lab="Skriv heile årstalet";sub="Fire siffer, t.d. 1975. Står det «75» på lista, skriv 1975.";} else {lab="Ugyldig årstal";sub="Er det ein kode, trykk «Står det ein kode i staden for årstal?».";} }
     else if(noYear){lab="Svar på spørsmålet";sub="Blekkskrift eller perforerte linjer?";}
     else if(in7679){lab="Kven er produsenten?";sub="Skriv produsenten, eller svar om han er norsk.";}
     $("vLabel").textContent=lab; $("vSub").textContent=sub; show("rule",false); return; }
@@ -365,9 +365,9 @@ function renderCode(){
   const box=$("codeOut"); box.textContent=""; const raw=$("eCode").value.trim(); if(!raw) return;
   const c=decodeCode(raw);
   const useBtn=o=>{const b=document.createElement("button");b.type="button";b.className="primary";b.textContent="Bruk "+o.y;
-    b.onclick=()=>{$("cNoYear").checked=false;$("eYear").value=String(o.y);$("eCode").value="";$("codeBox").hidden=true;render();}; return b;};
+    b.onclick=()=>{$("cNoYear").checked=false;$("eYear").value=String(o.y);$("eCode").value="";$("codeBox").hidden=true;renderCode();render();}; return b;};
   if(!c.length){ const p=document.createElement("span"); p.textContent="Fann ikkje noko årstal i koden. Er du usikker, vel «Ingen / uleseleg».";
-    const b=document.createElement("button");b.type="button";b.textContent="Vel «Ingen / uleseleg»";b.onclick=()=>{$("cNoYear").checked=true;$("eCode").value="";$("codeBox").hidden=true;render();};
+    const b=document.createElement("button");b.type="button";b.textContent="Vel «Ingen / uleseleg»";b.onclick=()=>{$("eYear").value="";$("cNoYear").checked=true;$("eCode").value="";$("codeBox").hidden=true;renderCode();render();};
     box.append(p,b); return; }
   const p=document.createElement("span");
   p.textContent=c.length===1?"Truleg "+c[0].y+" ("+c[0].why+"). Kontroller at det stemmer.":"Koden kan tolkast på fleire måtar. Vel det som passar best:";
