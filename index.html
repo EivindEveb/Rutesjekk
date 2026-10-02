@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="nn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rutesjekk</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#245e7a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rutesjekk">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<style>
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+img{max-width:100%}
+
+
+:root{
+  --bg:#eef1f3; --surface:#ffffff; --surface-2:#f5f7f8; --line:#d3d9de;
+  --fg:#1b2329; --muted:#5b6872; --accent:#245e7a; --accent-fg:#ffffff;
+  --pcb:#b3261e; --pcb-bg:#fbe9e7; --kp:#b85a00; --kp-bg:#fdf0e1;
+  --rest:#2e7d32; --rest-bg:#e8f3e9; --usikker:#8a6a00; --usikker-bg:#fbf4d6;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:10px; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171b; --surface:#1a2127; --surface-2:#212a31; --line:#33404a;
+  --fg:#e6ecf0; --muted:#9aa8b2; --accent:#6fb3d6; --accent-fg:#0d1a21;
+  --pcb:#ff8a80; --pcb-bg:#3a1714; --kp:#ffb066; --kp-bg:#3a250f;
+  --rest:#81c784; --rest-bg:#16301a; --usikker:#f0cf5a; --usikker-bg:#352d0c;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#12171b; --surface:#1a2127; --surface-2:#212a31; --line:#33404a;
+  --fg:#e6ecf0; --muted:#9aa8b2; --accent:#6fb3d6; --accent-fg:#0d1a21;
+  --pcb:#ff8a80; --pcb-bg:#3a1714; --kp:#ffb066; --kp-bg:#3a250f;
+  --rest:#81c784; --rest-bg:#16301a; --usikker:#f0cf5a; --usikker-bg:#352d0c;
+  color-scheme:dark;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.45;}
+[hidden]{display:none!important}
+img{max-width:100%}
+.app{max-width:640px;margin:0 auto;padding-inline:16px;padding-block:16px 48px;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:.01em;margin:0;text-wrap:balance}
+h1{font-size:30px;line-height:1}
+h2{font-size:22px}
+.top{display:flex;flex-direction:column;gap:12px}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand small{color:var(--muted);font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.who{font-size:14px;color:var(--muted)}
+.projbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.projbar label{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;width:100%}
+select,input[type=text],input[type=number],input[type=password]{font:inherit;font-size:16px;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;min-height:48px;width:100%}
+select:focus,input:focus,button:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:1px}
+.projbar select{flex:1 1 200px;width:auto;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+button,.btn{font:inherit;font-weight:600;font-size:16px;border-radius:8px;min-height:48px;padding:10px 16px;cursor:pointer;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center;position:relative;-webkit-tap-highlight-color:transparent}
+button:disabled{opacity:.5;cursor:default}
+.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn-primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);min-height:64px;font-size:20px;font-family:var(--f-display);letter-spacing:.02em;width:100%}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-row > *{min-width:0}
+@media (max-width:420px){.btn-row{grid-template-columns:1fr}}
+.btn input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.linkish{background:none;border:none;color:var(--accent);min-height:40px;padding:4px 0;font-weight:600}
+.muted{color:var(--muted)} .small{font-size:14px}
+details summary{cursor:pointer;font-weight:600;color:var(--accent);min-height:32px;display:flex;align-items:center}
+.tips{font-size:14px;color:var(--muted);margin:6px 0 0;padding-left:18px}
+.notice{padding:12px;border-radius:8px;background:var(--usikker-bg);color:var(--fg);font-size:14px;border:1px solid color-mix(in srgb,var(--usikker) 40%,transparent)}
+#preview{width:100%;max-height:260px;object-fit:contain;background:var(--surface-2);border-radius:8px;border:1px solid var(--line)}
+.status{display:flex;align-items:center;gap:12px;font-weight:600}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:sp .9s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
+.verdict{border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:4px;border:2px solid currentColor}
+.verdict .label{font-family:var(--f-display);font-size:42px;line-height:1;font-weight:700;letter-spacing:.02em}
+.verdict .sub{font-weight:600;font-size:16px;color:var(--fg)}
+.v-pcb{color:var(--pcb);background:var(--pcb-bg)}
+.v-kp{color:var(--kp);background:var(--kp-bg)}
+.v-rest{color:var(--rest);background:var(--rest-bg)}
+.v-usikker_pcb,.v-usikker_kp{color:var(--usikker);background:var(--usikker-bg)}
+.reading{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:15px}
+.reading dt{color:var(--muted)}
+.reading dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.stamp{font-family:var(--f-mono);font-size:14px;background:var(--surface-2);padding:2px 6px;border-radius:4px}
+.rule{margin:0;font-size:15px}
+.warn{margin:0;padding-left:18px;font-size:14px;color:var(--usikker)}
+.editor{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line);padding-top:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field > span{font-size:14px;color:var(--muted)}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:420px){.checks{grid-template-columns:1fr}}
+.check{display:flex;align-items:center;gap:10px;min-height:44px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);font-size:15px}
+.check input{width:20px;height:20px;accent-color:var(--accent);flex:none}
+.counts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:420px){.counts{grid-template-columns:repeat(2,1fr)}}
+.count{border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);background:var(--surface-2)}
+.count b{font-family:var(--f-display);font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.count span{font-size:13px;color:var(--muted)}
+.c-pcb b{color:var(--pcb)} .c-kp b{color:var(--kp)} .c-rest b{color:var(--rest)} .c-usikker b{color:var(--usikker)}
+.ovhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.rows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.row{border-top:1px solid var(--line);padding:10px 0;display:flex;flex-direction:column;gap:8px}
+.row:first-child{border-top:none}
+.rowbtn{all:unset;cursor:pointer;display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;width:100%;-webkit-tap-highlight-color:transparent}
+.rowbtn:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:6px}
+.thumb{width:56px;height:56px;border-radius:6px;object-fit:cover;background:var(--surface-2);border:1px solid var(--line)}
+.thumb.none{display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);text-align:center;line-height:1.1}
+.rmain{min-width:0}
+.loc{font-weight:600;overflow-wrap:anywhere}
+.meta{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.pill{font-family:var(--f-display);font-weight:700;font-size:15px;padding:4px 10px;border-radius:999px;white-space:nowrap;border:1.5px solid currentColor}
+.detail{display:flex;flex-direction:column;gap:8px;font-size:14px;background:var(--surface-2);border-radius:8px;padding:10px}
+.detail img{max-height:240px;object-fit:contain;border-radius:6px;align-self:flex-start}
+.empty{color:var(--muted);font-size:15px;padding:8px 0;margin:0}
+.danger{color:var(--pcb);border-color:color-mix(in srgb,var(--pcb) 50%,var(--line))}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted)}
+.foot{font-size:13px;color:var(--muted)}
+a{color:var(--accent)}
+.gate{min-height:70vh;display:flex;align-items:center}
+.gate .card{width:100%}
+
+.scanfield input{font-family:var(--f-mono);font-size:18px;letter-spacing:.02em;min-height:56px}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{display:flex;align-items:center;gap:8px;min-height:52px;padding:8px 10px;min-width:0;border:1.5px solid var(--line);border-radius:10px;background:var(--surface-2);font-weight:600;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.chip input{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.chip:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
+.chip.wide{grid-column:1 / -1}
+.q{display:flex;flex-direction:column;gap:8px}
+.yearrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:stretch}
+.yearrow input::placeholder{font-size:22px;font-weight:600}
+.yearrow input{font-family:var(--f-display);font-size:28px;font-weight:700;min-height:56px;letter-spacing:.04em}
+.sugg{display:flex;flex-wrap:wrap;gap:6px}
+.sugg button{min-height:40px;padding:6px 12px;font-size:15px;border-radius:999px}
+.sugg button small{font-weight:500;color:var(--muted);margin-left:4px}
+.addprod{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px dashed var(--line);border-radius:10px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip input[type=radio]{width:22px;height:22px;accent-color:var(--accent);flex:none}
+#scanBtn.busy{opacity:.6;pointer-events:none}
+.pick{display:flex;flex-direction:column;gap:8px}
+.pick-help{margin:0;font-size:15px}
+#pickCanvas{width:100%;border-radius:8px;border:1px solid var(--line);touch-action:none;background:var(--surface-2)}
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:8px;align-items:end}
+@media (max-width:420px){.grid2{grid-template-columns:1fr}}
+.grid2 > *{min-width:0}
+.sublabel{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:4px 0 0}
+.verdict.placeholder{color:var(--muted);background:var(--surface-2);border-style:dashed}
+.verdict.placeholder .label{font-size:22px}
+.photo-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.photo-row img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><h1>Rutesjekk</h1><small>PCB · KP · restavfall</small></div>
+  </header>
+
+  <form id="entry" class="card" autocomplete="off">
+    <h2>Kva slags rute er dette?</h2>
+    <div class="chips">
+      <label class="chip"><input id="cNoSpacer" type="checkbox"> Inga avstandslist</label>
+      <label class="chip"><input id="cThermo" type="checkbox"> Thermopane</label>
+    </div>
+
+    <div id="qYear" class="q">
+      <p class="sublabel">Årstal på lista</p>
+      <div class="yearrow">
+        <input id="eYear" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="1975" aria-label="Årstal">
+        <label class="chip"><input id="cNoYear" type="checkbox"> Ingen / uleseleg</label>
+      </div>
+      <button type="button" id="codeToggle" class="linkish" style="align-self:flex-start">Står det ein kode i staden for årstal?</button>
+      <div id="codeBox" class="addprod" hidden>
+        <input id="eCode" type="text" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="Skriv koden slik han står, t.d. H7811 eller 3-78">
+        <div id="codeOut" class="hint" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
+
+    <div id="qPost" class="q" hidden>
+      <p class="sublabel">Blekkskrift eller perforerte linjer på lista?</p>
+      <div class="seg" role="radiogroup">
+        <label class="chip"><input type="radio" name="post" value="ja"> Ja</label>
+        <label class="chip"><input type="radio" name="post" value="nei"> Nei</label>
+      </div>
+    </div>
+
+    <div id="qProd" class="q" hidden>
+      <p class="sublabel">Produsent (merking på lista)</p>
+      <input id="eProd" type="text" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="Skriv første bokstavar">
+      <div id="prodSugg" class="sugg" hidden></div>
+      <p id="prodInfo" class="hint" hidden></p>
+    </div>
+
+    <div id="qNorsk" class="q" hidden>
+      <p class="sublabel">Er produsenten norsk?</p>
+      <div class="seg" role="radiogroup">
+        <label class="chip"><input type="radio" name="norsk" value="ja"> Norsk</label>
+        <label class="chip"><input type="radio" name="norsk" value="nei"> Utanlandsk / veit ikkje</label>
+      </div>
+    </div>
+
+    <div id="verdict" class="verdict placeholder" aria-live="polite"><span class="label" id="vLabel">Skriv årstalet</span><span class="sub" id="vSub">Svaret kjem her med ein gong.</span></div>
+    <p id="rule" class="rule" hidden></p>
+    <button id="resetBtn" type="button">Neste rute</button>
+  </form>
+
+  <details class="card">
+    <summary>Reglane appen bruker</summary>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Avlesing</th><th>Resultat</th></tr></thead>
+      <tbody>
+        <tr><td>Inga avstandslist (enkel eller kopla rute)</td><td>Restavfall</td></tr>
+        <tr><td>Merka Thermopane (ikkje lima)</td><td>Restavfall</td></tr>
+        <tr><td>Før 1965, norsk produsent</td><td>Restavfall</td></tr>
+        <tr><td>Før 1965, utanlandsk eller ukjend produsent</td><td>PCB</td></tr>
+        <tr><td>1965–1975</td><td>PCB</td></tr>
+        <tr><td>1976–1979, norsk produsent</td><td>KP</td></tr>
+        <tr><td>1976–1979, utanlandsk eller ukjend produsent</td><td>PCB</td></tr>
+        <tr><td>1980–1990</td><td>KP</td></tr>
+        <tr><td>1991 eller seinare</td><td>Restavfall</td></tr>
+        <tr><td>Ingen årstal, utan blekkskrift eller perforerte linjer</td><td>PCB</td></tr>
+        <tr><td>Ingen årstal, med blekkskrift eller perforerte linjer</td><td>Usikkert: ikkje PCB, KP kan ikkje utelukkast</td></tr>
+      </tbody></table></div>
+    <h3>Produsentar appen kjenner</h3>
+    <p class="small muted" style="margin:0">Produsenten betyr berre noko for ruter frå før 1965 og frå 1976–1979.</p>
+    <div class="tablewrap"><table id="prodTable"><thead><tr><th>Merking</th><th>Produsent</th><th>Norsk/utanlandsk</th></tr></thead><tbody></tbody></table></div>
+    <p class="foot">Kjelder: Ruteretur, sorteringsrettleiar 11-2022 (ruteretur.no), norske produsentar og PCB-kriterium. Glascentrum MTK, «PCB i isolerrutor» (Sverige), utanlandske merkingar. Elles kjende glasprodusentar. KP-kriterium: produksjonsår 1975–1990.</p>
+  </details>
+
+  <p class="foot">Rutesjekk er ei hjelp til sortering etter faste reglar. Operatøren kontrollerer alltid stempelet.</p>
+</div>
+
+<script>
+(function(){
+"use strict";
+const PRODUCERS = [["ALCUO", "Sandvikens Blikvarefabrik", "Norsk", "Ruteretur 11-2022"], ["ARCTIC", "Arctic Glass, Gausvik", "Norsk", "Ruteretur 11-2022"], ["ALR", "Arne L. Riis, Trondheim", "Norsk", "Ruteretur 11-2022"], ["BØCKMANN", "Bøckmann, Fredrikstad", "Norsk", "Ruteretur 11-2022"], ["DUOTHERM", "Titan Glassverk", "Norsk", "Ruteretur 11-2022"], ["DRAMMEN", "Drammens Glassverk", "Norsk", "Ruteretur 11-2022"], ["FRIVATHERM", "Friva, Spydeberg", "Norsk", "Ruteretur 11-2022"], ["GP", "Evje", "Norsk", "Ruteretur 11-2022"], ["HOLE ISOLER", "Jon Hole, Nestun", "Norsk", "Ruteretur 11-2022"], ["LI-THERM", "Li Glass, Lillehammer", "Norsk", "Ruteretur 11-2022"], ["MASTERPANE", "Glassmester Svendsen, Mo i Rana", "Norsk", "Ruteretur 11-2022"], ["NOR-DAN", "Johs Rasmussen, Moi", "Norsk", "Ruteretur 11-2022"], ["NORPANE", "Sørumsand", "Norsk", "Ruteretur 11-2022"], ["NORSK ISOLER", "Glassindustrier, Sandnes", "Norsk", "Ruteretur 11-2022"], ["NORSK ISOLER (HRI)", "Hjort og Riser, Sandvika", "Norsk", "Ruteretur 11-2022"], ["NORSK ISOLERGLASS", "Bøckmann, Fredrikstad", "Norsk", "Ruteretur 11-2022"], ["ORKLA ISOLER", "Orkanger", "Norsk", "Ruteretur 11-2022"], ["PANOLOOK", "Risør", "Norsk", "Ruteretur 11-2022"], ["RIIS ISOLER", "Arctic Glass, Gausvik", "Norsk", "Ruteretur 11-2022"], ["SANKO ISOLER", "Sanko Industrier, Skorgenes", "Norsk", "Ruteretur 11-2022"], ["SCANDIGLASS", "Jensen Glass, Trondheim / Bjørn Rønning, Sem / Kåre Hillesland, Vormedal", "Norsk", "Ruteretur 11-2022"], ["TERMONOR", "Termonor Industrier, Kongsvinger", "Norsk", "Ruteretur 11-2022"], ["VEST ISOLER", "Vest Isolerglass, Florø", "Norsk", "Ruteretur 11-2022"], ["ØSTLANDSKE ELVERUM", "Østlandske Isolerglass, Elverum", "Norsk", "Ruteretur 11-2022"], ["RAKVÅG", "Rakvåg Glass, Rakvåg", "Norsk", "Anna kjelde"], ["RAUFOSS", "Raufoss", "Norsk", "Glascentrum MTK (Sverige)"], ["ATERPHONE", "Aterphone", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["CUDO", "Cudo", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["EMMABODA", "Emmaboda Glas", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["GADO", "Gado", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["GURUS", "Gurus", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["MEGA BUTYL", "Mega Butyl", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["MULTIPANE", "Multipane", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["NORDTERMO", "Nordtermo", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["ASTRAL", "Astral", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["PAULSSONS", "Paulssons Glas", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["POLARPANE", "Polarpane", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["POLYGLASS", "Polyglass", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["POLYVERBEL", "Polyverbel", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["SCANGLAS", "Scanglas", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["SOLARPANE", "Solarpane", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["SWISSTERMO", "Swisstermo", "Utanlandsk", "Glascentrum MTK (Sverige)"], ["PILKINGTON", "Pilkington", "Utanlandsk", "Anna kjelde"], ["VEGLA", "Vegla", "Utanlandsk", "Anna kjelde"], ["FLACHGLAS", "Flachglas", "Utanlandsk", "Anna kjelde"], ["GLAVERBEL", "Glaverbel", "Utanlandsk", "Anna kjelde"], ["SAINT-GOBAIN", "Saint-Gobain", "Utanlandsk", "Anna kjelde"], ["CLIMALIT", "Climalit (Saint-Gobain)", "Utanlandsk", "Anna kjelde"], ["CLIMAPLUS", "Climaplus (Saint-Gobain)", "Utanlandsk", "Anna kjelde"], ["INTERPANE", "Interpane", "Utanlandsk", "Anna kjelde"], ["UNIGLAS", "Uniglas", "Utanlandsk", "Anna kjelde"], ["ISOLAR", "Isolar", "Utanlandsk", "Anna kjelde"], ["GUARDIAN", "Guardian", "Utanlandsk", "Anna kjelde"]];
+const VERDICT={
+  pcb:{label:"PCB",sub:"Sorter som PCB-rute"},
+  kp:{label:"KP",sub:"Sorter som klorparafinrute"},
+  rest:{label:"Restavfall",sub:"Ikkje PCB og ikkje KP"},
+  usikker_pcb:{label:"Usikkert",sub:"Behandle som PCB"},
+  usikker_kp:{label:"Usikkert",sub:"Ikkje PCB. KP kan ikkje utelukkast"}
+};
+const $=id=>document.getElementById(id);
+const show=(id,on)=>{$(id).hidden=!on;};
+const norm=s=>String(s||"").toUpperCase().replace(/Ø/g,"O").replace(/Æ/g,"AE").replace(/Å/g,"A").replace(/[^A-Z0-9]/g,"");
+const THIS_YEAR=new Date().getFullYear();
+
+(function(){ const tb=$("prodTable").tBodies[0];
+  [...PRODUCERS].sort((x,y)=>x[2].localeCompare(y[2])||x[0].localeCompare(y[0],"nb")).forEach(p=>{const tr=tb.insertRow();tr.insertCell().textContent=p[0];tr.insertCell().textContent=p[1];tr.insertCell().textContent=p[2];}); })();
+
+function lev(a,b){const m=a.length,n=b.length;let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){const cur=[i];for(let j=1;j<=n;j++)cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));prev=cur;}return prev[n];}
+function findProd(txt){ const n=norm(txt); if(!n) return null;
+  let hit=PRODUCERS.find(p=>norm(p[0])===n); if(hit) return hit;
+  const c=PRODUCERS.filter(p=>norm(p[0]).length>=4&&n.includes(norm(p[0]))).sort((a,b)=>norm(b[0]).length-norm(a[0]).length); if(c.length) return c[0];
+  if(n.length>=5){ const f=PRODUCERS.filter(p=>Math.abs(norm(p[0]).length-n.length)<=1&&lev(norm(p[0]),n)<=1); if(f.length===1) return f[0]; }
+  return null; }
+function suggest(txt){ const n=norm(txt); if(!n) return []; return PRODUCERS.filter(p=>norm(p[0]).startsWith(n)||norm(p[1]).startsWith(n)).slice(0,6); }
+
+function classify(r){
+  if(r.ingen_list) return {v:"rest",rule:"Inga avstandslist: enkel eller kopla rute, ikkje isolerglas."};
+  if(r.thermopane) return {v:"rest",rule:"Merka Thermopane: glaset er ikkje lima, så ruta er verken PCB eller KP."};
+  const y=r.aarstal;
+  if(y===null){
+    if(r.etter1979) return {v:"usikker_kp",rule:"Blekkskrift eller perforerte linjer betyr produsert etter 1979, så ruta er ikkje PCB. Utan årstal kan KP (1975–1990) ikkje utelukkast."};
+    return {v:"pcb",rule:"Udatert rute utan blekkskrift eller perforerte linjer. Kan vere frå PCB-perioden, og blir sortert som PCB."};
+  }
+  if(y>THIS_YEAR) return {v:"usikker_pcb",rule:"Årstalet "+y+" er fram i tid. Kontroller årstalet. Behandle som PCB til det er avklart."};
+  if(y<1965){ const nv=r.namn?" ("+r.namn+")":"";
+    return r.norsk?{v:"rest",rule:y+", norsk produsent"+nv+": norske ruter frå før 1965 er utanfor PCB-perioden (1965–1975)."}:{v:"pcb",rule:y+", utanlandsk eller ukjend produsent"+nv+": utanlandske ruter til og med 1979 er PCB, også eldre."}; }
+  if(y>=1991) return {v:"rest",rule:y+": produsert 1991 eller seinare, verken PCB eller KP."};
+  if(y>=1980) return {v:"kp",rule:y+": ruter frå 1980–1990 er KP."};
+  if(y>=1976){ const nv=r.namn?" ("+r.namn+")":"";
+    return r.norsk?{v:"kp",rule:y+", norsk produsent"+nv+": norske ruter frå 1976–1979 er KP."}:{v:"pcb",rule:y+", utanlandsk eller ukjend produsent"+nv+": til og med 1979 er PCB."}; }
+  return {v:"pcb",rule:y+": ruter frå 1965–1975 er PCB."};
+}
+const radio=n=>{const el=document.querySelector('input[name="'+n+'"]:checked');return el?el.value:null;};
+function parseYear(v){ v=String(v||"").replace(/[^0-9]/g,""); return v.length===4?+v:null; }
+
+function render(){
+  const special=$("cNoSpacer").checked||$("cThermo").checked, noYear=$("cNoYear").checked;
+  const raw=$("eYear").value.replace(/[^0-9]/g,""), y=noYear?null:parseYear(raw);
+  const in7679=!special&&y!==null&&((y>=1976&&y<=1979)||y<1965);
+  const t=$("eProd").value.trim(), hit=findProd(t);
+  $("qYear").hidden=special; $("eYear").disabled=noYear;
+  show("qPost",!special&&noYear); show("qProd",in7679); show("qNorsk",in7679&&!hit);
+  const info=$("prodInfo");
+  if(in7679&&hit){ info.textContent="✓ "+hit[0]+": "+hit[1]+" – "+hit[2].toLowerCase()+"."; show("prodInfo",true); }
+  else if(in7679&&t){ info.textContent="Ukjend produsent. Svar under om han er norsk."; show("prodInfo",true); }
+  else show("prodInfo",false);
+  const sg=$("prodSugg"); sg.textContent=""; const list=(in7679&&!hit&&document.activeElement===$("eProd"))?suggest(t):[];
+  list.forEach(p=>{const b=document.createElement("button");b.type="button";b.textContent=p[0];const sm=document.createElement("small");sm.textContent=p[2]==="Norsk"?"norsk":"utanl.";b.appendChild(sm);
+    b.onmousedown=e=>e.preventDefault(); b.onclick=()=>{$("eProd").value=p[0];render();}; sg.appendChild(b);});
+  show("prodSugg",list.length>0); if(list.length) show("prodInfo",false);
+
+  let ready=special||y!==null||(noYear&&radio("post")); if(in7679&&!hit&&!radio("norsk")) ready=false;
+  const v=$("verdict");
+  if(!ready){ v.className="verdict placeholder"; let lab="Skriv årstalet", sub="Svaret kjem her med ein gong.";
+    if(!noYear&&raw&&y===null){lab="Skriv heile årstalet";sub="Fire siffer, t.d. 1975. Står det «75» på lista, skriv 1975.";}
+    else if(noYear){lab="Svar på spørsmålet";sub="Blekkskrift eller perforerte linjer?";}
+    else if(in7679){lab="Kven er produsenten?";sub="Skriv produsenten, eller svar om han er norsk.";}
+    $("vLabel").textContent=lab; $("vSub").textContent=sub; show("rule",false); return; }
+  const c=classify({ingen_list:$("cNoSpacer").checked,thermopane:$("cThermo").checked,aarstal:y,etter1979:noYear&&radio("post")==="ja",
+    norsk:hit?hit[2]==="Norsk":radio("norsk")==="ja",namn:hit?hit[0]:(t||null)});
+  v.className="verdict v-"+c.v; $("vLabel").textContent=VERDICT[c.v].label; $("vSub").textContent=VERDICT[c.v].sub;
+  $("rule").textContent=c.rule; show("rule",true);
+}
+["eYear","cNoYear","cNoSpacer","cThermo","eProd"].forEach(id=>{$(id).addEventListener("input",render);$(id).addEventListener("change",render);});
+$("eProd").addEventListener("focus",render); $("eProd").addEventListener("blur",()=>setTimeout(render,150));
+document.querySelectorAll('input[name="post"],input[name="norsk"]').forEach(el=>el.addEventListener("change",render));
+/* ---------- tolking av datokodar ---------- */
+function decodeCode(raw){
+  const NOW=new Date().getFullYear(); let s=" "+String(raw||"").toUpperCase()+" ";
+  s=s.replace(/(\d)[OQD]/g,"$10").replace(/[OQD](\d)/g,"0$1");
+  const yy=n=>{n=+n;return n>=50?1900+n:2000+n;}; const ok=y=>y>=1950&&y<=NOW;
+  const out=[]; const add=(y,why,p)=>{ if(ok(y)&&!out.some(o=>o.y===y)) out.push({y,why,p}); };
+  let m;
+  const r4=/(?:^|[^0-9])(19[5-9]\d|20[0-4]\d)(?![0-9])/g; while((m=r4.exec(s))) add(+m[1],m[1]+" er eit fullt årstal",1);
+  if(out.length) return out;
+  const rd=/(?:^|[^0-9])(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2})(?![0-9])/g; while((m=rd.exec(s))) add(yy(m[3]),m[0].trim()+": dato, år "+m[3],1);
+  const rq=/(?:^|[^0-9A-Z])(\d{1,2}|IV|I{1,3}|V?I{0,3}|XI{0,2})\s*[-\/. ]\s*(\d{2})(?![0-9])/g;
+  while((m=rq.exec(s))){ if(!m[1])continue; const first=/^\d+$/.test(m[1])?+m[1]:1; if(first>=1&&first<=12) add(yy(m[2]),m[0].trim()+": kvartal eller månad, så år "+m[2],2); }
+  const rl=/[A-ZÆØÅ]\s?(\d{2})(\d{2})(?![0-9])/g;
+  while((m=rl.exec(s))){ if(+m[1]>=50&&+m[2]>=1&&+m[2]<=12) add(yy(m[1]),m[0].trim()+": år "+m[1]+", månad "+m[2],2); }
+  const r4d=/(?:^|[^0-9A-Z])(\d{2})(\d{2})(?![0-9])/g;
+  while((m=r4d.exec(s))){ const a=+m[1],b=+m[2];
+    if(a>=50&&b>=1&&b<=53) add(yy(m[1]),m[1]+m[2]+": år "+m[1]+", veke eller månad "+m[2],3);
+    if(b>=50&&a>=1&&a<=53) add(yy(m[2]),m[1]+m[2]+": veke eller månad "+m[1]+", år "+m[2],3);
+    if(a>=50&&b>=50){ add(yy(m[1]),m[1]+m[2]+": kan vere år "+m[1],3); add(yy(m[2]),m[1]+m[2]+": kan vere år "+m[2],3); } }
+  const r3=/(?:^|[^0-9])([1-4])(\d{2})(?![0-9])/g; while((m=r3.exec(s))){ if(+m[2]>=50) add(yy(m[2]),m[0].trim()+": kvartal "+m[1]+", år "+m[2],4); }
+  if(!out.length){ const r2=/(?:^|[^0-9])([5-9]\d)(?![0-9])/g; while((m=r2.exec(s))) add(yy(m[1]),m[1]+": truleg år "+m[1],5); }
+  const best=Math.min(...out.map(o=>o.p)); return out.filter(o=>o.p===best);
+}
+function renderCode(){
+  const box=$("codeOut"); box.textContent=""; const raw=$("eCode").value.trim(); if(!raw) return;
+  const c=decodeCode(raw);
+  const useBtn=o=>{const b=document.createElement("button");b.type="button";b.className="primary";b.textContent="Bruk "+o.y;
+    b.onclick=()=>{$("cNoYear").checked=false;$("eYear").value=String(o.y);$("eCode").value="";$("codeBox").hidden=true;render();}; return b;};
+  if(!c.length){ const p=document.createElement("span"); p.textContent="Fann ikkje noko årstal i koden. Er du usikker, vel «Ingen / uleseleg».";
+    const b=document.createElement("button");b.type="button";b.textContent="Vel «Ingen / uleseleg»";b.onclick=()=>{$("cNoYear").checked=true;$("eCode").value="";$("codeBox").hidden=true;render();};
+    box.append(p,b); return; }
+  const p=document.createElement("span");
+  p.textContent=c.length===1?"Truleg "+c[0].y+" ("+c[0].why+"). Kontroller at det stemmer.":"Koden kan tolkast på fleire måtar. Vel det som passar best:";
+  box.appendChild(p);
+  const row=document.createElement("div"); row.className="seg"; c.slice(0,4).forEach(o=>row.appendChild(useBtn(o))); box.appendChild(row);
+  if(c.length>1) c.forEach(o=>{const d=document.createElement("small");d.textContent=o.y+": "+o.why;box.appendChild(d);});
+}
+$("codeToggle").onclick=()=>{ $("codeBox").hidden=!$("codeBox").hidden; if(!$("codeBox").hidden) $("eCode").focus(); };
+$("eCode").addEventListener("input",renderCode);
+$("entry").addEventListener("submit",e=>e.preventDefault());
+$("resetBtn").onclick=()=>{ $("entry").reset(); $("codeBox").hidden=true; renderCode(); render(); window.scrollTo({top:0,behavior:"smooth"}); };
+render();
+window.__rs={classify,findProd,decodeCode};
+if("serviceWorker" in navigator){ window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); }); }
+})();
+</script>
+</body>
+</html>
