@@ -198,15 +198,11 @@ a{color:var(--accent)}
 
   <section id="cList" class="card qcard">
     <h2>Kva avstandslist er det på glaset?</h2>
+    <p class="hint" style="margin:0">Vel det første alternativet som passar.</p>
     <button type="button" class="choice" data-list="ingen"><b>Ingen avstandslist / Thermopane</b><span>Enkel eller kopla rute, eller merka Thermopane</span></button>
-    <button type="button" class="choice" data-list="enkel"><b>Enkeltstipla / vanleg avstandslist</b><span>Glatt eller éi stipla linje, ofte med innpressa stempel</span></button>
-    <button type="button" class="choice" data-list="dobbel"><b>Dobbeltstipla avstandslist</b><span>To rader med små hol eller strekar langs lista</span></button>
-  </section>
-
-  <section id="cInk" class="card qcard" hidden>
-    <h2>Er det blekkskrift i avstandslista?</h2>
-    <p class="hint">Tekst trykt oppå lista med blekk, ofte prikkskrift, t.d. «BØCKMANN 23.06.2009».</p>
-    <div class="seg"><button type="button" class="choice center" data-ink="ja"><b>Ja</b></button><button type="button" class="choice center" data-ink="nei"><b>Nei</b></button></div>
+    <button type="button" class="choice" data-list="dobbel"><b>Dobbeltstipla</b><span>To rader med små hol eller strekar langs lista</span></button>
+    <button type="button" class="choice" data-list="blekk"><b>Blekkskrift</b><span>Tekst trykt oppå lista med blekk, ofte prikkskrift. Gjeld òg enkeltstipla lister</span></button>
+    <button type="button" class="choice" data-list="enkel"><b>Enkeltstipla eller utan stipling</b><span>Utan blekkskrift. Teksten er ofte innpressa i metallet</span></button>
   </section>
 
   <section id="cYear" class="card qcard" hidden>
@@ -251,15 +247,18 @@ a{color:var(--accent)}
       <thead><tr><th>Avstandslist og årstal</th><th>Resultat</th></tr></thead>
       <tbody>
         <tr><td>Ingen avstandslist / Thermopane</td><td>Restavfall</td></tr>
-        <tr><td>Enkeltstipla, ingen årstal</td><td>PCB</td></tr>
-        <tr><td>Enkeltstipla, før 1965, norsk</td><td>Restavfall</td></tr>
-        <tr><td>Enkeltstipla, før 1965, utanlandsk/ukjend</td><td>PCB</td></tr>
-        <tr><td>Enkeltstipla, 1965–1975</td><td>PCB</td></tr>
-        <tr><td>Enkeltstipla, 1976–1979, norsk</td><td>KP</td></tr>
-        <tr><td>Enkeltstipla, 1976–1979, utanlandsk/ukjend</td><td>PCB</td></tr>
-        <tr><td>1980–1990 (begge listetypar)</td><td>KP</td></tr>
-        <tr><td>1991 eller seinare (begge listetypar)</td><td>Restavfall</td></tr>
-        <tr><td>Dobbeltstipla, ingen årstal</td><td>KP</td></tr>
+        <tr><td>Dobbeltstipla eller blekkskrift, 1980–1990</td><td>KP</td></tr>
+        <tr><td>Dobbeltstipla eller blekkskrift, 1991 →</td><td>Restavfall</td></tr>
+        <tr><td>Dobbeltstipla eller blekkskrift, ingen årstal</td><td>KP</td></tr>
+        <tr><td>Enkeltstipla / utan stipling, 1950 eller tidlegare</td><td>Restavfall</td></tr>
+        <tr><td>Enkeltstipla / utan stipling, 1951–1964, norsk</td><td>Restavfall</td></tr>
+        <tr><td>Enkeltstipla / utan stipling, 1951–1964, utanlandsk/ukjend</td><td>PCB</td></tr>
+        <tr><td>Enkeltstipla / utan stipling, 1965–1975</td><td>PCB</td></tr>
+        <tr><td>Enkeltstipla / utan stipling, 1976–1979, norsk</td><td>KP</td></tr>
+        <tr><td>Enkeltstipla / utan stipling, 1976–1979, utanlandsk/ukjend</td><td>PCB</td></tr>
+        <tr><td>Enkeltstipla / utan stipling, 1980–1990</td><td>KP</td></tr>
+        <tr><td>Enkeltstipla / utan stipling, 1991 →</td><td>Restavfall</td></tr>
+        <tr><td>Enkeltstipla / utan stipling, ingen årstal</td><td>PCB</td></tr>
       </tbody></table></div>
     <h3>Produsentar appen kjenner</h3>
     <div class="tablewrap"><table id="prodTable"><thead><tr><th>Merking</th><th>Produsent</th><th>Norsk/utanlandsk</th></tr></thead><tbody></tbody></table></div>
@@ -314,19 +313,19 @@ function decodeCode(raw){
 }
 
 /* ---------- reglar (ved tvil: tryggaste val, PCB > KP > restavfall) ---------- */
-function needsProducer(st){ return st.list==="enkel"&&st.year!==null&&(st.year<1965||(st.year>=1976&&st.year<=1979)); }
+function needsProducer(st){ return st.list==="enkel"&&st.year!==null&&((st.year>1950&&st.year<1965)||(st.year>=1976&&st.year<=1979)); }
 function classify(st){
   if(st.list==="ingen") return {v:"rest",rule:"Inga avstandslist eller Thermopane: ikkje isolerglas med lim, så verken PCB eller KP."};
   const y=st.year, nv=st.namn?" ("+st.namn+")":"";
-  if(st.list==="dobbel"){
-    const blekk=st.ink?"Dobbeltstipla med blekkskrift":"Dobbeltstipla";
-    if(y===null) return {v:"kp",rule:blekk+" avstandslist er laga etter 1979, så ruta er ikkje PCB.",doubt:"Utan årstal kan KP (1980–1990) ikkje utelukkast. Det tryggaste valet er KP."};
-    if(y>=1991) return {v:"rest",rule:y+": "+blekk.toLowerCase()+" avstandslist, produsert 1991 eller seinare. Verken PCB eller KP."};
+  if(st.list==="dobbel"||st.list==="blekk"){
+    const blekk=st.list==="blekk"?"Lista med blekkskrift":"Dobbeltstipla";
+    if(y===null) return {v:"kp",rule:blekk+" er laga etter 1979, så ruta er ikkje PCB.",doubt:"Utan årstal kan KP (1980–1990) ikkje utelukkast. Det tryggaste valet er KP."};
+    if(y>=1991) return {v:"rest",rule:y+": produsert 1991 eller seinare. Verken PCB eller KP."};
     if(y>=1980) return {v:"kp",rule:y+": ruter frå 1980–1990 er KP."};
-    const base=classify({list:"enkel",year:y,land:"ukjend",namn:null});
-    return {v:base.v,rule:base.rule,doubt:"Dobbeltstipla lister er laga etter 1979, men årstalet er lese som "+y+". Kontroller årstalet. Inntil vidare gjeld det tryggaste valet."};
+    return {v:"kp",rule:blekk+" er laga etter 1979, så ruta er ikkje PCB.",doubt:"Årstalet "+y+" passar ikkje med lista og er truleg feillese, eller ikkje eit produksjonsår. Kontroller gjerne. PCB er utelukka, men KP kan ikkje utelukkast, så det tryggaste valet er KP."};
   }
-  if(y===null) return {v:"pcb",rule:"Udatert rute utan dobbeltstipla list.",doubt:"Ruta kan vere frå PCB-perioden. Det tryggaste valet er PCB, slik Ruteretur tilrår."};
+  if(y!==null&&y<=1950) return {v:"rest",rule:y+": produsert i 1950 eller tidlegare. Lima isolerglas med PCB var ikkje i bruk då, så ruta er verken PCB eller KP."};
+  if(y===null) return {v:"pcb",rule:"Udatert rute utan dobbeltstipling eller blekkskrift.",doubt:"Ruta kan vere frå PCB-perioden. Det tryggaste valet er PCB, slik Ruteretur tilrår."};
   if(y>=1991) return {v:"rest",rule:y+": produsert 1991 eller seinare, verken PCB eller KP."};
   if(y>=1980) return {v:"kp",rule:y+": ruter frå 1980–1990 er KP."};
   if(y>=1976){
@@ -336,8 +335,8 @@ function classify(st){
   }
   if(y>=1965) return {v:"pcb",rule:y+": ruter frå 1965–1975 er PCB."};
   if(st.land==="norsk") return {v:"rest",rule:y+", norsk produsent"+nv+": norske ruter frå før 1965 er utanfor PCB-perioden (1965–1975)."};
-  if(st.land==="utanlandsk") return {v:"pcb",rule:y+", utanlandsk produsent"+nv+": utanlandske ruter til og med 1979 er PCB.",doubt:y<1950?"PCB i isolerglas er ikkje kjent før 1950-talet, men kan ikkje utelukkast. Det tryggaste valet er PCB.":null};
-  return {v:"pcb",rule:y+", ukjend produsent"+nv+".",doubt:"Norske ruter frå før 1965 er restavfall, utanlandske er PCB. Det tryggaste valet er PCB."};
+  if(st.land==="utanlandsk") return {v:"pcb",rule:y+", utanlandsk produsent"+nv+": utanlandske ruter til og med 1979 er PCB.",doubt:"I Noreg vart isolerglas vanleg først på 1960-talet. Ruter frå 1950-talet er oftast importerte frå Sverige eller Danmark, der nokre produsentar brukte PCB frå tidleg på 1950-talet."};
+  return {v:"pcb",rule:y+", ukjend produsent"+nv+".",doubt:"Norske ruter frå før 1965 er restavfall. Ruter frå 1950-talet er oftast importerte frå Sverige eller Danmark, der nokre produsentar brukte PCB. Det tryggaste valet er PCB."};
 }
 
 /* ---------- kortflyt ---------- */
@@ -353,13 +352,11 @@ function go(card){ hist.push({card:current(),st:JSON.parse(JSON.stringify(st))})
 function current(){ const c=[...document.querySelectorAll(".qcard")].find(c=>!c.hidden); return c?c.id:"cList"; }
 function back(){ const h=hist.pop(); if(!h) return; st=h.st;
   if(h.card==="cList"){ st={list:null,ink:null,year:null,noYear:false,land:null,namn:null}; }
-  if(h.card==="cInk"){ st.ink=null; st.year=null; st.noYear=false; st.land=null; st.namn=null; }
   if(h.card==="cYear"){ st.year=null; st.noYear=false; st.land=null; st.namn=null; }
   if(h.card==="cProd"){ st.land=null; st.namn=null; }
   show(h.card); syncInputs(); }
 function crumbs(){ const a=[];
-  if(st.list) a.push({ingen:"Ingen list / Thermopane",enkel:"Enkeltstipla",dobbel:"Dobbeltstipla"}[st.list]);
-  if(st.ink!==null) a.push(st.ink?"Blekkskrift":"Ikkje blekkskrift");
+  if(st.list) a.push({ingen:"Ingen list / Thermopane",enkel:"Enkeltstipla / utan stipling",dobbel:"Dobbeltstipla",blekk:"Blekkskrift"}[st.list]);
   if(st.year!==null) a.push(String(st.year)); else if(st.noYear) a.push("Ingen årstal");
   if(st.land) a.push(st.namn?st.namn:({norsk:"Norsk",utanlandsk:"Utanlandsk",ukjend:"Ukjend produsent"}[st.land]));
   return a.join(" › "); }
@@ -375,23 +372,23 @@ function result(){
 document.querySelectorAll("[data-list]").forEach(b=>b.onclick=()=>{
   st.list=b.dataset.list;
   if(st.list==="ingen") return result();
-  if(st.list==="dobbel") return go("cInk");
-  $("yearTitle").textContent="Kva årstal står i avstandslista?"; go("cYear");
+  go("cYear");
 });
-document.querySelectorAll("[data-ink]").forEach(b=>b.onclick=()=>{ st.ink=b.dataset.ink==="ja"; $("yearTitle").textContent="Kva årstal står i avstandslista?"; go("cYear"); });
+function finish(){ result(); }
 /* årstal */
 function yearMsg(t){ $("yearMsg").textContent=t; $("yearMsg").hidden=!t; }
 function submitYear(){
   const raw=$("eYear").value.trim();
   if(!/^\d{4}$/.test(raw)){ yearMsg("Skriv heile årstalet med fire siffer, t.d. 1975. Står det ein kode, trykk på lenkja under."); return; }
   const y=+raw; if(y<1900||y>THIS_YEAR){ yearMsg("Årstalet "+y+" kan ikkje stemme. Kontroller og skriv det på nytt."); return; }
+  if((st.list==="dobbel"||st.list==="blekk")&&y<1980){ yearMsg((st.list==="blekk"?"Med blekkskrift":"Med dobbeltstipla list")+" er ruta laga i 1980 eller seinare. Kontroller årstalet, eller trykk «Ingen årstal / uleseleg»."); return; }
   st.year=y; st.noYear=false; afterYear();
 }
-function afterYear(){ if(needsProducer(st)){ $("eProd").value=""; st.land=null; st.namn=null; renderProd(); go("cProd"); } else result(); }
+function afterYear(){ if(needsProducer(st)){ $("eProd").value=""; st.land=null; st.namn=null; renderProd(); go("cProd"); } else finish(); }
 $("yearNext").onclick=submitYear;
 $("eYear").addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();submitYear();} });
 $("eYear").addEventListener("input",()=>yearMsg(""));
-$("noYear").onclick=()=>{ st.year=null; st.noYear=true; result(); };
+$("noYear").onclick=()=>{ st.year=null; st.noYear=true; finish(); };
 /* kode */
 $("codeToggle").onclick=()=>{ $("codeBox").hidden=!$("codeBox").hidden; if(!$("codeBox").hidden) $("eCode").focus(); };
 function renderCode(){
@@ -416,8 +413,8 @@ function renderProd(){
   else { info.textContent=t&&!list.length?"Ukjend produsent. Vel under om han er norsk eller utanlandsk.":""; info.hidden=!info.textContent; $("prodHitNext").hidden=true; }
 }
 $("eProd").addEventListener("input",renderProd);
-$("prodHitNext").onclick=()=>{ const hit=findProd($("eProd").value); if(!hit) return; st.namn=hit[0]; st.land=hit[2]==="Norsk"?"norsk":"utanlandsk"; result(); };
-document.querySelectorAll("[data-land]").forEach(b=>b.onclick=()=>{ st.land=b.dataset.land; const t=$("eProd").value.trim(); st.namn=t?t.toUpperCase():null; result(); });
+$("prodHitNext").onclick=()=>{ const hit=findProd($("eProd").value); if(!hit) return; st.namn=hit[0]; st.land=hit[2]==="Norsk"?"norsk":"utanlandsk"; finish(); };
+document.querySelectorAll("[data-land]").forEach(b=>b.onclick=()=>{ st.land=b.dataset.land; const t=$("eProd").value.trim(); st.namn=t?t.toUpperCase():null; finish(); });
 /* navigasjon */
 $("backBtn").onclick=back;
 $("newBtn").onclick=()=>{ reset(); $("eYear").value=""; $("eCode").value=""; $("codeBox").hidden=true; renderCode(); $("eProd").value=""; renderProd(); yearMsg(""); show("cList"); };
